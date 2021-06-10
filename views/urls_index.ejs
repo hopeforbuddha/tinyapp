@@ -23,9 +23,24 @@
         </tr>
       </thead>
       <tbody>
+        <%if (!username) { %>
+          <% for(let url in urls) { %>
+          <tr>
+            <td><a class="hyperlink" href="<%= urls[url] %>"><%= url %></a></td>
+            <td><%= urls[url] %></td>
+            <td><a href=<%= `/login` %>>
+              <button class="btn btn-outline-primary" value="edit">Edit</button>
+            </a>
+            </td>
+            <td><form method="POST" action="/urls/<%= url %>/delete">
+              <button class="btn btn-outline-danger" value="delete">Delete</button>
+            </form>
+          </tr>
+          <% } %>
+        <% } else { %>
         <% for(let url in urls) { %>
           <tr>
-            <td><%= url %></td>
+            <td><a class="hyperlink" href="<%= urls[url] %>"><%= url %></a></td>
             <td><%= urls[url] %></td>
             <td><a href=<%= `/urls/${url}` %>>
               <button class="btn btn-outline-primary" value="edit">Edit</button>
@@ -35,6 +50,7 @@
               <button class="btn btn-outline-danger" value="delete">Delete</button>
             </form>
           </tr>
+          <% } %>
         <% } %>
         </form>
       </tbody>

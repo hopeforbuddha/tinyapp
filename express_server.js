@@ -75,7 +75,7 @@ app.listen(PORT, () => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = {username: req.cookies.userID}
+  const templateVars = {username: req.cookies.userID, user: users[req.cookies.userID]}
   res.render("urls_new", templateVars);
 })
 
@@ -87,7 +87,7 @@ app.get("/urls", (req, res) => {
 
 // gets shortURL
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { users, shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies.userID};
+  const templateVars = { users, shortURL: req.params.shortURL, user: users[req.cookies.userID], longURL: urlDatabase[req.params.shortURL], username: req.cookies.userID};
   //urlDatabase.keyValues = templateVars
   //console.log(req.params)
   res.render("urls_show", templateVars);
