@@ -113,7 +113,7 @@ app.post("/urls", (req, res) => {
   const shortURL = randomStringGenerator(6)
   const longURL = req.body.longURL
   urlDatabase[shortURL] = {longURL: longURL, userID: users[req.cookies.userID].id};
-  console.log(urlDatabase)
+  //console.log(urlDatabase)
   res.redirect(`/urls`)
 });
 
@@ -129,26 +129,23 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   const urlToDelete = urlDatabase[req.params.shortURL];
 
   if (cookieID === urlToDelete.userID) {
-    console.log("this is triggering")
     delete urlDatabase[req.params.shortURL]
   }
-  console.log(urlDatabase)
-
-
-  //
-  //const usersLinks = urlsForUser(cookieID)
-  //console.log("userlinks", usersLinks)
-  //
-  //
-  //  delete urlDatabase[req.params.shortURL];
-  //}
-  
   res.redirect("/urls")
 })
 
 // editor
 app.post("/urls/:id", (req, res) => {
-  urlDatabase[req.params.id] = req.body.longURL
+
+  const cookieID = req.cookies.userID
+  const shortURL = req.params.id
+  const urlToEdit = urlDatabase[shortURL];
+
+  if (cookieID === urlToEdit.userID) {
+    urlDatabase[req.params.id].longURL = req.body.longURL
+    console.log(urlDatabase)
+  }
+  
   res.redirect("/urls")
 })
 
@@ -208,7 +205,7 @@ app.post("/register", (req, res) => {
   res.cookie("userID", userRandomID);
  //console.log(users)
  
-  console.log(users)
+  //console.log(users)
   res.redirect("/")
 })
 
