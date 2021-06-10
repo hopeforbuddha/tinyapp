@@ -87,7 +87,7 @@ app.get("/urls", (req, res) => {
 
 // gets shortURL
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { users, shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const templateVars = { users, shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies.userID};
   //urlDatabase.keyValues = templateVars
   //console.log(req.params)
   res.render("urls_show", templateVars);
@@ -122,8 +122,8 @@ app.post("/urls/:id", (req, res) => {
 })
 
 app.get("/login", (req, res) => {
-
-  res.render("urls_login")
+  const templateVars = {username: req.cookies.userID}
+  res.render("urls_login", templateVars)
 })
 
 app.post("/login", (req, res) => {
@@ -131,12 +131,12 @@ app.post("/login", (req, res) => {
 
   if (!userCheck) {
       res.status(403);
-      res.send("Invalid entry first if")
+      res.send("Invalid entry")
     } 
   
   if (userCheck.password !== req.body.password) {
     res.status(403);
-    res.send("Invalid entry second if")
+    res.send("Invalid entry")
   }
 
   
@@ -153,8 +153,8 @@ app.post("/logout", (req, res) => {
 })
 // functional without header or ccs currently
 app.get("/register", (req, res) => {
-  let templateVars = {}
-  res.render("urls_register", {user: users[req.cookies.userID]})
+  let templateVars = {username: req.cookies.userID, user: users[req.cookies.userID]}
+  res.render("urls_register", templateVars)
 })
 
 app.post("/register", (req, res) => {

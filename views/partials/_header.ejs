@@ -8,13 +8,13 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-          
+          <% if ("/login" || !"/register") {%>
             <% if (!username) {%>
             <form method="GET" action="/login">
-              <button style="float: right;" class="btn btn-warning" type="submit">Login</button>
+              <button style="position: absolute; right: 100px;" class="btn btn-warning" type="submit">Login</button>
             </form>
             <form action="/register" method="GET">
-              <button class="btn btn-primary" type="submit">register</button>
+              <button style="position: absolute; right: 10px;" class="btn btn-primary" type="submit">register</button>
             </form>
               <% } else {%>
               <form method="POST" action="/logout">
@@ -22,7 +22,8 @@
                 </input>
                  <button class="btn btn-outline-secondary" type="submit">Logout</button>
               </form>
-            <% } %>            
+            <% } %>
+            <%}%>            
           <p></p>
       </div>
     </div>
