@@ -10,14 +10,14 @@
   <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
-        <h5 class="card-title">TinyURL for: <%= longURL %></h5>
+        <h5 class="card-title">TinyURL for: <%= longURL.longURL %></h5>
         <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
       </div>
       <div class="container">
         <tr>
             <td><form method="POST" action="/urls/<%= shortURL %>">
               <div class="a">
-              <input class="form-control" name="longURL" type="url" title="longURL" placeholder="<%= longURL %>" style="width: 300px; margin: 1em">
+              <input class="form-control" name="longURL" type="url" title="longURL" placeholder="<%= longURL.longURL %>" style="width: 300px; margin: 1em">
               </div>
               <!-- <input placeholder="<%= longURL %>"" type="text" style="width: 300px;" name="longURL"> -->
               <button class="btn btn-primary" type="submit">Edit</button>
