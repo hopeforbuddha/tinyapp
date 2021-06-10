@@ -114,7 +114,7 @@ app.post("/urls", (req, res) => {
   const longURL = req.body.longURL
   urlDatabase[shortURL] = {longURL: longURL, userID: users[req.cookies.userID].id};
   console.log(urlDatabase)
-  res.redirect(`/urls/${shortURL}`)
+  res.redirect(`/urls`)
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -125,7 +125,24 @@ app.get("/u/:shortURL", (req, res) => {
 
 //delet btn
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
+  const cookieID = req.cookies.userID
+  const urlToDelete = urlDatabase[req.params.shortURL];
+
+  if (cookieID === urlToDelete.userID) {
+    console.log("this is triggering")
+    delete urlDatabase[req.params.shortURL]
+  }
+  console.log(urlDatabase)
+
+
+  //
+  //const usersLinks = urlsForUser(cookieID)
+  //console.log("userlinks", usersLinks)
+  //
+  //
+  //  delete urlDatabase[req.params.shortURL];
+  //}
+  
   res.redirect("/urls")
 })
 
