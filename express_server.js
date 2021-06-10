@@ -12,6 +12,7 @@ const randomStringGenerator = (input) => {
   for (let i = 0; i < input; i++) {
     result.push(characters.charAt(Math.floor(Math.random() * characters.length)));
   }
+  console.log(typeof result.join(''))
   return result.join('');
 }
 
@@ -23,8 +24,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 
 let users = {
-  333: {
-    id: 333,
+  "333": {
+    id: "333",
     email: "user@example.com",
     password: "12345"
   }
@@ -33,20 +34,23 @@ let users = {
 const checkDuplicate = (email) => {
   for (let userID in users) {
 console.log("check duplicate", users[userID].email)
-    if (users[userID].email === email) {
-    console.log("error");
-    return true;
+    if (users[userID].email.toLowerCase() === email.toLowerCase()) {
+    return users[userID];
     }
   }
   return false;
 }
 
+// FIX THIS NOT STOPING FROM SAVING IF THERE IS A BLANK
+// FIX THIS NOT STOPING FROM SAVING IF THERE IS A BLANK
+// FIX THIS NOT STOPING FROM SAVING IF THERE IS A BLANK
 const checkEmpty = (req, res) => {
   if (!req.body.email || !req.body.password) {
     res.status(400);
     res.send("Invalidy entry");
-    return
+    return false
   }
+  return true
 }
 
 const urlDatabase = {
@@ -55,7 +59,7 @@ const urlDatabase = {
 };
 
 app.get("/", (req, res) => {
-  res.redirect("/register");
+  res.redirect("/urls");
 }); 
 
 app.get("/urls.json", (req, res) => {
@@ -67,16 +71,17 @@ app.get("/hello", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  //console.log(`Example app listening on port ${PORT}!`);
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {username: req.cookies.userID}
+  res.render("urls_new", templateVars);
 })
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, users , username: req.cookies.userID };
-  console.log("this is cookie value: ", req.cookies.userID)
+  const templateVars = { urls: urlDatabase, user: users[req.cookies.userID], username: req.cookies.userID };// cookie is stored as username for header
+  //console.log("this is cookie value: ", req.cookies.userID)
   res.render("urls_index", templateVars);
 });
 
@@ -84,7 +89,7 @@ app.get("/urls", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { users, shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   //urlDatabase.keyValues = templateVars
-  console.log(req.params)
+  //console.log(req.params)
   res.render("urls_show", templateVars);
 });
 
@@ -104,6 +109,7 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
+//delet btn
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls")
@@ -115,43 +121,63 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls")
 })
 
+app.get("/login", (req, res) => {
+
+  res.render("urls_login")
+})
 
 app.post("/login", (req, res) => {
+  const userCheck = checkDuplicate(req.body.email);
+
+  if (!userCheck) {
+      res.status(403);
+      res.send("Invalid entry first if")
+    } 
   
-  res.cookie("username", req.body.login);
-  console.log(req.body.login)
+  if (userCheck.password !== req.body.password) {
+    res.status(403);
+    res.send("Invalid entry second if")
+  }
+
+  
+  res.cookie("userID", userCheck.id)
+  
   res.redirect("/urls")
 })
 
+
 app.post("/logout", (req, res) => {
-  res.clearCookie("username")
+  res.clearCookie("userID")
   res.redirect("/")
 
 })
-
+// functional without header or ccs currently
 app.get("/register", (req, res) => {
-  res.render("urls_register", {users})
+  let templateVars = {}
+  res.render("urls_register", {user: users[req.cookies.userID]})
 })
 
 app.post("/register", (req, res) => {
- let userRandomID = randomStringGenerator(3);
+  let userRandomID = randomStringGenerator(3);
+  checkEmpty(req, res)
 
-
- if (checkDuplicate(req.body.email)) {
+  if (checkDuplicate(req.body.email)) {
    res.status(400);
    res.send("Invalid entry")
    return
- }
+  }
  
- users[userRandomID] = {
+ 
+ 
+  users[userRandomID] = {
   id: userRandomID,
   email: req.body.email,
   password: req.body.password
- }
- res.cookie("userID", userRandomID);
+  }
+  res.cookie("userID", userRandomID);
  //console.log(users)
  
- console.log(users)
- res.redirect("/")
+  console.log(users)
+  res.redirect("/")
 })
 
