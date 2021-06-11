@@ -4,7 +4,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
-const {urlsForUser, checkEmpty, findUserEmail, randomStringGenerator} = require("./helpers")
+const {urlsForUser, checkEmpty, findUserEmail, randomStringGenerator} = require("./helpers");
 
 app.use(express.urlencoded({ extended: false }));
 app.set("view engine", "ejs");
@@ -60,10 +60,10 @@ app.get("/urls/new", (req, res) => {
 })
 
 app.get("/urls", (req, res) => {
-  let username = null
-  let usersLinks = {}
+  let username = null;
+  let usersLinks = {};
   if (req.session.userID) {
-    username = req.session.userID
+    username = req.session.userID;
     usersLinks = urlsForUser(urlDatabase, users[req.session.userID].id);
   }
     
@@ -80,51 +80,51 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.post("/urls", (req, res) => {
   const shortURL = randomStringGenerator(6)
-  const longURL = req.body.longURL
+  const longURL = req.body.longURL;
   urlDatabase[shortURL] = {longURL: longURL, userID: users[req.session.userID].id};
   //console.log(urlDatabase)
   res.redirect(`/urls`)
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL]
+  const longURL = urlDatabase[req.params.shortURL];
   //urlDatabase = req.params.shortURL
   res.redirect(longURL);
 });
 
 //delet btn
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const cookieID = req.session.userID
+  const cookieID = req.session.userID;
   const urlToDelete = urlDatabase[req.params.shortURL];
 
   if (cookieID === urlToDelete.userID) {
-    delete urlDatabase[req.params.shortURL]
+    delete urlDatabase[req.params.shortURL];
   }
-  res.redirect("/urls")
+  res.redirect("/urls");
 })
 
 // editor
 app.post("/urls/:id", (req, res) => {
 
-  const cookieID = req.session.userID
-  const shortURL = req.params.id
+  const cookieID = req.session.userID;
+  const shortURL = req.params.id;
   const urlToEdit = urlDatabase[shortURL];
 
   if (cookieID === urlToEdit.userID) {
     urlDatabase[req.params.id].longURL = req.body.longURL
-    console.log(urlDatabase)
+    console.log(urlDatabase);
   }
   
-  res.redirect("/urls")
+  res.redirect("/urls");
 })
 
 app.get("/login", (req, res) => {
   const templateVars = {username: req.session.userID}
-  res.render("urls_login", templateVars)
+  res.render("urls_login", templateVars);
 })
 
 app.post("/login", (req, res) => { 
-  const user = findUserEmail(users, req.body.email)
+  const user = findUserEmail(users, req.body.email);
   
   checkEmpty(req, res)
   if (user && bcrypt.compareSync(req.body.password, user.password)) {
@@ -139,24 +139,23 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   req.session["userID"] = null;
-  res.redirect("/")
+  res.redirect("/");
 
 })
 // functional without header or ccs currently
 app.get("/register", (req, res) => {
   let templateVars = {username: req.session.userID, user: users[req.session.userID]}
-  res.render("urls_register", templateVars)
+  res.render("urls_register", templateVars);
 })
 
 app.post("/register", (req, res) => {
   let userRandomID = randomStringGenerator(3);
   
-  
 
   if (findUserEmail(users, req.body.email)) {
    res.status(400);
-   res.send("Invalid entry")
-   return
+   res.send("Invalid entry");
+   return;
   }
  
  if (checkEmpty(req, res)) {
@@ -170,7 +169,7 @@ app.post("/register", (req, res) => {
   //console.log(users)
  
   //console.log(users)
-  res.redirect("/")
+  res.redirect("/");
 })
 
 module.exports = {users, urlDatabase}
