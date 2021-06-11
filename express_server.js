@@ -1,10 +1,18 @@
+const cookieSession = require("cookie-session")
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+const cookieParser = require("cookie-parser")
 
+app.use(express.urlencoded({ extended: false }));
 app.set("view engine", "ejs");
-app.use(cookieParser());
+app.use(cookieParser())
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+}));
 
 const randomStringGenerator = (input) => {
   let result = [];
@@ -26,17 +34,27 @@ let users = {
   "333": {
     id: "333",
     email: "user@example.com",
-    password: "12345"
+    password: bcrypt.hashSync('12345', saltRounds)
   }
 }
 
-const checkDuplicate = (email) => {
+const findUserEmail = (email) => {
   for (let userID in users) {
-    if (users[userID].email.toLowerCase() === email.toLowerCase()) {
+    if (users[userID].email === email) {
     return users[userID];
     }
   }
   return false;
+}
+
+const authUser = (email, password) => {
+  const user = findUserEmail(email)
+
+  if (user && bcrypt.compareSync(password, user.password)) {
+    return user
+  } else {
+    return false
+  }
 }
 
 // FIX THIS NOT STOPING FROM SAVING IF THERE IS A BLANK
@@ -155,14 +173,14 @@ app.get("/login", (req, res) => {
 })
 
 app.post("/login", (req, res) => {
-  const userCheck = checkDuplicate(req.body.email);
+  const userCheck = findUserEmail(req.body.email);
 
   if (!userCheck) {
       res.status(403);
       res.send("Invalid entry")
     } 
-  
-  if (userCheck.password !== req.body.password) {
+  //userCheck.password !== 
+  if (authUser(userCheck, req.body.password)) {
     res.status(403);
     res.send("Invalid entry")
   }
@@ -189,7 +207,7 @@ app.post("/register", (req, res) => {
   let userRandomID = randomStringGenerator(3);
   checkEmpty(req, res)
 
-  if (checkDuplicate(req.body.email)) {
+  if (findUserEmail(req.body.email)) {
    res.status(400);
    res.send("Invalid entry")
    return
@@ -200,10 +218,10 @@ app.post("/register", (req, res) => {
   users[userRandomID] = {
   id: userRandomID,
   email: req.body.email,
-  password: req.body.password
+  password: bcrypt.hashSync(req.body.password, saltRounds),
   }
   res.cookie("userID", userRandomID);
- //console.log(users)
+ console.log(users)
  
   //console.log(users)
   res.redirect("/")
