@@ -4,7 +4,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
-
+const {urlsForUser, checkEmpty, findUserEmail, randomStringGenerator} = require("./helpers")
 
 app.use(express.urlencoded({ extended: false }));
 app.set("view engine", "ejs");
@@ -14,20 +14,9 @@ app.use(cookieSession({
   keys: ['key1', 'key2']
 }));
 
-const randomStringGenerator = (input) => {
-  let result = [];
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789";
-  for (let i = 0; i < input; i++) {
-    result.push(characters.charAt(Math.floor(Math.random() * characters.length)));
-  }
-  return result.join('');
-}
-
 const bodyParser = require("body-parser");
 const { response } = require("express");
 app.use(bodyParser.urlencoded({extended: true}));
-
-
 
 
 let users = {
@@ -38,53 +27,11 @@ let users = {
   }
 }
 
-const findUserEmail = (email) => {
-  for (let userID in users) {
-    if (users[userID].email === email) {
-    return users[userID];
-    }
-  }
-  return false;
-}
-
-const authUser = (email, password) => {
-  const user = findUserEmail(email)
-
-  if (user && bcrypt.compareSync(password, user.password)) {
-    return user
-  } else {
-    return false
-  }
-}
-
-// FIX THIS NOT STOPING FROM SAVING IF THERE IS A BLANK
-// FIX THIS NOT STOPING FROM SAVING IF THERE IS A BLANK
-// FIX THIS NOT STOPING FROM SAVING IF THERE IS A BLANK
-const checkEmpty = (req, res) => {
-  if (req.body.email === "" || req.body.password === "") {
-    res.status(400);
-    res.send("Invalidy entry");
-    return false
-  }
-  return true
-}
-
 const urlDatabase = {
   "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userID: "333"},
   "9sm5xK": {longURL: "http://www.google.com", userID: "333"},
   "999666": {longURL: "https://developer.mozilla.org", userID: "YAL"}
 };
-
-//checks urldatabase for matching userID so that only the owners of the urls can see and edit them
-const urlsForUser = (id) => {
-  let urls = {}
-  for (const key in urlDatabase) {
-    if (urlDatabase[key].userID === id) {
-      urls[key] = urlDatabase[key]
-    }
-  }
-  return urls
-}
 
 
 app.get("/", (req, res) => {
@@ -93,6 +40,10 @@ app.get("/", (req, res) => {
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
+});
+
+app.get("/users.json", (req, res) => {
+  res.json(users);
 });
 
 app.get("/hello", (req, res) => {
@@ -113,7 +64,7 @@ app.get("/urls", (req, res) => {
   let usersLinks = {}
   if (req.session.userID) {
     username = req.session.userID
-    usersLinks = urlsForUser(users[req.session.userID].id);
+    usersLinks = urlsForUser(urlDatabase, users[req.session.userID].id);
   }
     
   const templateVars = { urls: usersLinks, user: users[req.session.userID], username };// cookie is stored as username for header
@@ -172,23 +123,17 @@ app.get("/login", (req, res) => {
   res.render("urls_login", templateVars)
 })
 
-app.post("/login", (req, res) => {
-  const userCheck = findUserEmail(req.body.email);
-
-  if (!userCheck) {
-      res.status(403);
-      res.send("Invalid entry")
-    } 
-  //userCheck.password !== 
-  if (authUser(userCheck, req.body.password)) {
-    res.status(403);
-    res.send("Invalid entry")
+app.post("/login", (req, res) => { 
+  const user = findUserEmail(users, req.body.email)
+  
+  checkEmpty(req, res)
+  if (user && bcrypt.compareSync(req.body.password, user.password)) {
+    req.session["userID"] = user.id;
+    res.redirect("/urls")
+  } else {
+    res.status(400);
+    res.send("Invalid entry");
   }
-
-  
-  req.session["userID"] = userCheck.id;
-  
-  res.redirect("/urls")
 })
 
 
@@ -208,7 +153,7 @@ app.post("/register", (req, res) => {
   
   
 
-  if (findUserEmail(req.body.email)) {
+  if (findUserEmail(users, req.body.email)) {
    res.status(400);
    res.send("Invalid entry")
    return
@@ -228,3 +173,4 @@ app.post("/register", (req, res) => {
   res.redirect("/")
 })
 
+module.exports = {users, urlDatabase}

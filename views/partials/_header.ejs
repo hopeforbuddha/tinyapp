@@ -8,8 +8,8 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         
-          <% if ("/login" || !"/register") {%>
-            <% if (!username) {%>
+          <% if ("/login" || !"/register") { %>
+            <% if (!username) { %>
               <a class="nav-item nav-link" href="/login">Create New URL</a>
             <form method="GET" action="/login">
               <button style="position: absolute; right: 100px;" class="btn btn-warning" type="submit">Login</button>
@@ -17,15 +17,14 @@
             <form action="/register" method="GET">
               <button style="position: absolute; right: 10px;" class="btn btn-primary" type="submit">register</button>
             </form>
-              <% } else {%>
+              <% } else { %>
                 <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-              <form method="POST" action="/logout">
-                <p>Logged in as user: <%= user.email %></p>
-                </input>
-                 <button class="btn btn-outline-secondary" type="submit">Logout</button>
-              </form>
-            <% } %>
-            <%}%>            
+                <form style="display: flex; position: absolute; right: 10px;" method="POST" action="/logout">
+                  <h5 class="align-middle" style="margin: 0 1em 0 0; display: flex;align-items: center;">Logged in as user: <%= user.email %></h5>
+                  <button class="btn btn-outline-secondary" type="submit">Logout</button>
+                </form>
+              <% } %>
+            <% } %>            
           <p></p>
       </div>
     </div>
