@@ -46,12 +46,8 @@ app.get("/users.json", (req, res) => {
   res.json(users);
 });
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
 
 app.listen(PORT, () => {
-  //console.log(`Example app listening on port ${PORT}!`);
 });
 
 app.get("/urls/new", (req, res) => {
@@ -60,8 +56,11 @@ app.get("/urls/new", (req, res) => {
 })
 
 app.get("/urls", (req, res) => {
+  // takes the list of urls associated with the user from urlsForUser fnc
+  // puts it in a new object specifically for that user via userLinks
   let username = null;
   let usersLinks = {};
+
   if (req.session.userID) {
     username = req.session.userID;
     usersLinks = urlsForUser(urlDatabase, users[req.session.userID].id);
@@ -71,7 +70,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// gets shortURL
+// retrieves from app shortURL
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { users, shortURL: req.params.shortURL, user: users[req.session.userID], longURL: urlDatabase[req.params.shortURL], username: req.session.userID};
   res.render("urls_show", templateVars);
@@ -82,17 +81,15 @@ app.post("/urls", (req, res) => {
   const shortURL = randomStringGenerator(6)
   const longURL = req.body.longURL;
   urlDatabase[shortURL] = {longURL: longURL, userID: users[req.session.userID].id};
-  //console.log(urlDatabase)
   res.redirect(`/urls`)
 });
 
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
-  //urlDatabase = req.params.shortURL
   res.redirect(longURL);
 });
 
-//delet btn
+//delet btn, checks permissions before allowing request
 app.post("/urls/:shortURL/delete", (req, res) => {
   const cookieID = req.session.userID;
   const urlToDelete = urlDatabase[req.params.shortURL];
@@ -103,7 +100,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 })
 
-// editor
+// editor, checks permissions before allowing request
 app.post("/urls/:id", (req, res) => {
 
   const cookieID = req.session.userID;
@@ -123,7 +120,8 @@ app.get("/login", (req, res) => {
   res.render("urls_login", templateVars);
 })
 
-app.post("/login", (req, res) => { 
+app.post("/login", (req, res) => {
+  // loggin secured via sessions and bcrypt
   const user = findUserEmail(users, req.body.email);
   
   checkEmpty(req, res)
@@ -142,12 +140,12 @@ app.post("/logout", (req, res) => {
   res.redirect("/");
 
 })
-// functional without header or ccs currently
+//retrieves the user data from the app
 app.get("/register", (req, res) => {
   let templateVars = {username: req.session.userID, user: users[req.session.userID]}
   res.render("urls_register", templateVars);
 })
-
+//sends the user data to the database
 app.post("/register", (req, res) => {
   let userRandomID = randomStringGenerator(3);
   
@@ -164,11 +162,9 @@ app.post("/register", (req, res) => {
   email: req.body.email,
   password: bcrypt.hashSync(req.body.password, saltRounds),
   }
-}
+  }
   req.session["userID"] = userRandomID;
-  //console.log(users)
- 
-  //console.log(users)
+
   res.redirect("/");
 })
 
