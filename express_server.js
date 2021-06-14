@@ -35,24 +35,20 @@ const urlDatabase = {
 
 
 app.get("/", (req, res) => {
-  res.redirect("/urls");
+  if (req.session.userID) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login")
+  }
 }); 
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/users.json", (req, res) => {
-  res.json(users);
-});
-
-
-app.listen(PORT, () => {
-});
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {username: req.session.userID, user: users[req.session.userID]}
-  res.render("urls_new", templateVars);
+  if (req.session.userID) {
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/login")
+  }
 })
 
 app.get("/urls", (req, res) => {
@@ -73,7 +69,18 @@ app.get("/urls", (req, res) => {
 // retrieves from app shortURL
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { users, shortURL: req.params.shortURL, user: users[req.session.userID], longURL: urlDatabase[req.params.shortURL], username: req.session.userID};
-  res.render("urls_show", templateVars);
+
+  const cookieID = req.session.userID;
+  const urlToShow = urlDatabase[req.params.shortURL];
+  
+  
+  
+  if (cookieID === urlToShow.userID) {
+    res.render("urls_show", templateVars);
+  } else {
+    res.status(400);
+    res.send("Invalid entry");
+  }
 });
 
 
@@ -85,7 +92,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
@@ -109,7 +116,6 @@ app.post("/urls/:id", (req, res) => {
 
   if (cookieID === urlToEdit.userID) {
     urlDatabase[req.params.id].longURL = req.body.longURL
-    console.log(urlDatabase);
   }
   
   res.redirect("/urls");
@@ -167,5 +173,8 @@ app.post("/register", (req, res) => {
 
   res.redirect("/");
 })
+
+app.listen(PORT, () => {
+});
 
 module.exports = {users, urlDatabase}
